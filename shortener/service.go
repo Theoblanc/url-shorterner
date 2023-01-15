@@ -5,8 +5,8 @@ type ShortenRepositoryImplemnt struct {
 	shortenRepository ShortenRepository
 }
 
-// ShortenerService is interface fo shortener
-type ShortenerService interface {
+// Service is interface fo shortener
+type Service interface {
 	Create(dto *CreateShortenDTO) (string, error)
 	GetAll() error
 	GetByURL(url string) (GetShorteerDTO, error)

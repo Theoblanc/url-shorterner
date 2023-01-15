@@ -1,7 +1,6 @@
-package utils
+package helpers
 
 import (
-	"os"
 	"strings"
 )
 
@@ -15,21 +14,11 @@ func EnforceHTTP(url string) string {
 }
 
 // RemoveDomainError ...
-func RemoveDomainError(url string) bool {
-	// basically this functions removes all the commonly found
-	// prefixes from URL such as http, https, www
-	// then checks of the remaining string is the DOMAIN itself
-	if url == os.Getenv("DOMAIN") {
-		return false
-	}
+func RemoveDomainError(url string) string {
 	newURL := strings.Replace(url, "http://", "", 1)
 	newURL = strings.Replace(newURL, "https://", "", 1)
 	newURL = strings.Replace(newURL, "www.", "", 1)
 	newURL = strings.Split(newURL, "/")[0]
 
-	if newURL == os.Getenv("DOMAIN") {
-		return false
-	}
-
-	return true
+	return newURL
 }

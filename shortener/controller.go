@@ -3,19 +3,13 @@ package shortener
 import (
 	"time"
 
+	"github.com/Theoblanc/url-shortener/helpers"
 	"github.com/gofiber/fiber/v2"
 )
 
-// ShortenerController controller interface
-// type ShortenerController interface {
-// 	Create(ctx *fiber.Ctx) (string, error)
-// 	GetAll(ctx *fiber.Ctx)
-// 	GetByURL(ctx *fiber.Ctx)
-// }
-
 // Controller shortener controller struct
 type Controller struct {
-	shortenerservice ShortenerService
+	shortenerservice Service
 }
 
 // CreateShortenDTO create shorten DTO
@@ -32,6 +26,10 @@ func (c *Controller) Create(ctx *fiber.Ctx) (string, error) {
 	if err := ctx.BodyParser(dto); err != nil {
 		return "", ctx.SendString(err.Error())
 	}
+
+	enforceURL := helpers.EnforceHTTP(dto.url)
+	dto.customShort = helpers.RemoveDomainError(enforceURL)
+	dto.expiry = time.Now().Local().AddDate(1, 0, 0)
 
 	shortURL, err := c.shortenerservice.Create(dto)
 	if err != nil {
