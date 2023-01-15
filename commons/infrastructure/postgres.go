@@ -31,7 +31,7 @@ func GetPostgreSQLClient(config config.Interface) {
 	log.Println("Connected to database successfully")
 	db.Logger = logger.Default.LogMode(logger.Info)
 
-	err = db.AutoMigrate(&shortener.ShortenerEntity{})
+	err = db.AutoMigrate(&shortener.Entity{})
 
 	if err != nil {
 		fmt.Println(err)

@@ -30,7 +30,7 @@ func (sh *ShortenRepositoryImplemnt) GetByURL(url string) (GetShorteerDTO, error
 	return domainToDto(shoterner), err
 }
 
-func domainToDto(domain ShortenerAnemic) GetShorteerDTO {
+func domainToDto(domain Anemic) GetShorteerDTO {
 	return GetShorteerDTO{
 		ID:  domain.ID,
 		URL: domain.URL,

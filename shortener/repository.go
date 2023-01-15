@@ -8,16 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// ShortenerEntity shortener entity
-type ShortenerEntity struct {
+// Entity shortener entity
+type Entity struct {
 	ID          string `gorm:"primaryKey"`
 	URL         string
 	CustomShort string
 	Expiry      time.Time
 }
 
-// ShortenerAnemic shortener anemic model
-type ShortenerAnemic struct {
+// Anemic shortener anemic model
+type Anemic struct {
 	ID          string
 	URL         string
 	CustomShort string
@@ -27,8 +27,8 @@ type ShortenerAnemic struct {
 // ShortenRepository is interface for shotrener
 type ShortenRepository interface {
 	Save(dto *CreateShortenDTO) string
-	FindAll() (*ShortenerAnemic, error)
-	FindByURL(url string) (ShortenerAnemic, error)
+	FindAll() (*Anemic, error)
+	FindByURL(url string) (Anemic, error)
 }
 
 // Repositorys postgresql and redis repository
@@ -43,8 +43,8 @@ func (r *Repositorys) Save(dto *CreateShortenDTO) {
 }
 
 // FindByURL find shortener by url and save cache
-func (r *Repositorys) FindByURL(url string) (ShortenerAnemic, error) {
-	shorten := ShortenerEntity{
+func (r *Repositorys) FindByURL(url string) (Anemic, error) {
+	shorten := Entity{
 		URL: url,
 	}
 
@@ -55,23 +55,23 @@ func (r *Repositorys) FindByURL(url string) (ShortenerAnemic, error) {
 	tx := r.DB.Find(&shorten, 1)
 
 	if err := tx.Error; err != nil {
-		return convertEntityToDomain(ShortenerEntity{}), err
+		return convertEntityToDomain(Entity{}), err
 	}
 	r.setCache(url, &shorten)
 
 	return convertEntityToDomain(shorten), nil
 }
 
-func convertDtoToEntity(dto CreateShortenDTO) ShortenerEntity {
-	return ShortenerEntity{
+func convertDtoToEntity(dto CreateShortenDTO) Entity {
+	return Entity{
 		URL:         dto.url,
 		CustomShort: dto.customShort,
 		Expiry:      dto.expiry,
 	}
 }
 
-func convertEntityToDomain(entity ShortenerEntity) ShortenerAnemic {
-	return ShortenerAnemic{
+func convertEntityToDomain(entity Entity) Anemic {
+	return Anemic{
 		ID:          entity.ID,
 		URL:         entity.URL,
 		CustomShort: entity.CustomShort,
@@ -81,13 +81,13 @@ func convertEntityToDomain(entity ShortenerEntity) ShortenerAnemic {
 
 func (r *Repositorys) getCache(
 	key string,
-) *ShortenerEntity {
+) *Entity {
 	data, getDataFromRedisError := r.redis.Get("profile:" + key).Result()
 	if getDataFromRedisError != nil {
 		return nil
 	}
 
-	entity := &ShortenerEntity{}
+	entity := &Entity{}
 	jsonUnmarshalError := json.Unmarshal([]byte(data), entity)
 	if jsonUnmarshalError != nil {
 		return nil
@@ -100,10 +100,9 @@ func (r *Repositorys) getCache(
 }
 
 func (r *Repositorys) setCache(
-	key string, shortenerEntity *ShortenerEntity,
+	key string, shortenerEntity *Entity,
 ) {
-	marshaledEntity, _ := json.Marshal(&shortenerEntity)
 	r.redis.Set(
-		"profile:"+key, string(marshaledEntity), time.Second,
+		"shotrener:"+key, string(shortenerEntity.CustomShort), time.Duration(shortenerEntity.Expiry.Hour()),
 	)
 }
